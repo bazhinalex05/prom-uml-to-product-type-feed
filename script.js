@@ -272,7 +272,7 @@ function upsertOutputFile_(row, xml) {
     }
   }
 
-  return folder.createFile(fileName, xml, MimeType.XML);
+  return folder.createFile(Utilities.newBlob(xml, "application/xml", fileName));
 }
 
 function buildOutputUrl_(slug, fileId) {
