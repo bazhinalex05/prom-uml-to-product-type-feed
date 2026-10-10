@@ -20,6 +20,14 @@ var COLS = [
   "error"
 ];
 
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu("Prom converter")
+    .addItem("Update all feeds", "runAllFeeds")
+    .addItem("Update selected row", "runSelectedRowFromMenu")
+    .addToUi();
+}
+
 function setupControlSheet() {
   var sheet = getControlSheet_();
   ensureHeader_(sheet);
@@ -63,7 +71,7 @@ function runAllFeeds() {
 function runSelectedRow(rowNumber) {
   var sheet = getControlSheet_();
   ensureHeader_(sheet);
-  var row = Number(rowNumber || sheet.getActiveRange().getRow());
+  var row = Number(rowNumber || getActiveDataRow_());
   if (row < 2) throw new Error("Select a data row, not the header.");
   var rows = getConfigRows_(sheet);
   for (var i = 0; i < rows.length; i++) {
@@ -73,6 +81,10 @@ function runSelectedRow(rowNumber) {
     }
   }
   throw new Error("Row not found: " + row);
+}
+
+function runSelectedRowFromMenu() {
+  runSelectedRow(getActiveDataRow_());
 }
 
 function doGet(e) {
@@ -313,6 +325,18 @@ function getControlSheet_() {
   var sheet = ss.getSheetByName(CONFIG_SHEET_NAME);
   if (!sheet) sheet = ss.insertSheet(CONFIG_SHEET_NAME);
   return sheet;
+}
+
+function getActiveDataRow_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error("Open the control spreadsheet before using Update selected row.");
+  var sheet = ss.getActiveSheet();
+  if (!sheet || sheet.getName() !== CONFIG_SHEET_NAME) {
+    throw new Error("Select a row in the " + CONFIG_SHEET_NAME + " sheet.");
+  }
+  var range = sheet.getActiveRange();
+  if (!range) throw new Error("Select a data row first.");
+  return range.getRow();
 }
 
 function ensureHeader_(sheet) {
